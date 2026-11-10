@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rachel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f6f3;
+    --ink:#2a2624;
+    --soft:#9b958f;
+    --serif:"Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink)}
+  body{font-family:var(--serif);font-weight:300;-webkit-font-smoothing:antialiased}
+  body.on-cover{overflow:hidden}
+  button{font:inherit;color:inherit;background:none;border:0}
+  @media (pointer:fine){ body, body *{cursor:none} }
+
+  /* cursor */
+  .dot{position:fixed;left:0;top:0;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;
+       background:var(--ink);opacity:.5;pointer-events:none;z-index:99;
+       transition:width .5s ease,height .5s ease,margin .5s ease,opacity .5s ease,background .5s ease}
+  .dot.big{width:46px;height:46px;margin:-23px 0 0 -23px;background:transparent;border:1px solid var(--ink);opacity:.22}
+  @media (pointer:coarse){.dot{display:none}}
+
+  /* ================= PÁGINA 1 · portada ================= */
+  #cover{position:fixed;inset:0;z-index:10;background:var(--paper);
+         display:flex;flex-direction:column;align-items:center;justify-content:center;
+         transition:opacity 3.5s ease, visibility 0s linear 3.5s}
+  #cover.gone{opacity:0;visibility:hidden}
+  .dates{position:absolute;top:7vh;left:0;right:0;text-align:center;
+         font-size:11px;letter-spacing:.08em;color:var(--soft);
+         opacity:0;animation:fade 3s ease .6s forwards}
+  .dates i{display:inline-block;width:28px;height:1px;background:var(--soft);vertical-align:middle;margin:0 12px;opacity:.6}
+  .sig{width:min(22vw,250px);height:auto;display:block}
+  @keyframes write{to{clip-path:inset(0 0 0 0)}}
+  .enter{position:absolute;bottom:9vh;left:0;right:0;margin:auto;width:max-content;
+         font-size:11px;letter-spacing:.08em;color:var(--soft);
+         opacity:0;pointer-events:none;animation:fade 3s ease 2.5s forwards;transition:color 1.2s ease}
+  .enter:hover{color:var(--ink)}
+  .enter span{display:block;width:1px;height:34px;background:currentColor;margin:16px auto 0;opacity:.5;
+              transform-origin:top;animation:breathe 3.6s ease-in-out infinite}
+  @keyframes fade{to{opacity:1;pointer-events:auto}}
+  @keyframes breathe{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+
+  /* ================= PÁGINA 2 · archivo ================= */
+  #archive{opacity:0;transition:opacity 3.5s ease 2.2s}
+  body.on-archive #archive{opacity:1}
+  body.on-cover #archive{visibility:hidden}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:flex-start;gap:5vw;
+         padding:28px 3.5vw;pointer-events:none}
+  header > *{pointer-events:auto}
+  .mini{height:22px;width:auto;opacity:.85;transition:opacity .6s ease}
+  .mini:hover{opacity:1}
+  header .meta{font-size:10px;letter-spacing:.08em;line-height:1.8;color:var(--soft);padding-top:4px}
+  header .meta b{font-weight:400;color:var(--ink)}
+
+  /* static stage: whole archive visible at once */
+  .stage{position:relative;width:min(100vw,160vh);height:min(100vh,62.5vw);margin:0 auto}
+  body.on-archive{overflow:hidden}
+  #archive{height:100vh;display:flex;align-items:center}
+
+  .it{container-type:inline-size;position:absolute;opacity:0;filter:blur(6px);transition:opacity 2.6s ease, filter 2.6s ease}
+  .it.seen{opacity:1;filter:none}
+  .it:hover{z-index:20}
+  .it:nth-child(1){left:6%; top:22%;width:18%}
+  .it:nth-child(2){left:29%;top:9%; width:11%}
+  .it:nth-child(3){left:44%;top:26%;width:30%}
+  .it:nth-child(4){left:78%;top:12%;width:14%}
+  .it:nth-child(5){left:23%;top:57%;width:24%}
+  .it:nth-child(6){left:63%;top:59%;width:13%}
+  .it:nth-child(7){left:9%; top:60%;width:8%}
+  .it:nth-child(8){left:82%;top:48%;width:7.5%}
+  .it video{display:block;width:100%;height:auto;background:#e9e7e3}
+
+  .card{perspective:2000px}
+  .inner{position:relative;transform-style:preserve-3d;transition:transform 2.2s cubic-bezier(.45,.05,.2,1)}
+  .card.flip .inner{transform:rotateY(180deg)}
+  .front,.back{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .front img{display:block;width:100%;height:auto}
+  .back{position:absolute;inset:0;transform:rotateY(180deg);background:#fff;color:#1f1c1a;box-shadow:0 0 0 .5px rgba(30,25,20,.10);
+        display:flex;align-items:center;justify-content:center;padding:12% 11%;text-align:left}
+  .back p{font-size:clamp(7px,.6vw,9px);line-height:1.9;font-weight:200;letter-spacing:.02em;white-space:pre-line}
+  .back p.empty{opacity:.5}
+  .back{overflow:hidden}
+  .vid .back{padding:12% 10%}
+  .vid .back p{font-size:clamp(6px,.52vw,8px);line-height:1.75}
+  .cap{position:absolute;left:0;top:calc(100% + 8px);font-size:9px;letter-spacing:.12em;color:var(--soft)}
+
+  @media (max-width:760px){
+    body.on-archive{overflow-y:auto}
+    #archive{height:auto;display:block}
+    .stage{width:auto;height:auto;padding:16vh 9vw 14vh;display:flex;flex-direction:column;gap:9vh}
+    .it{position:relative;left:auto!important;top:auto!important;width:100%!important}
+  }
+</style>
+</head>
+<body class="on-cover">
+
+<div class="dot" id="dot"></div>
+
+<!-- PÁGINA 1 -->
+<section id="cover">
+  <div class="dates">17 April 2006<i></i>4 October 2026</div>
+  <img class="sig" src="assets/firma.png" alt="Rachel">
+  <button class="enter" id="enter">open the archive<span></span></button>
+</section>
+
+<!-- PÁGINA 2 -->
+<div id="archive">
+  <header>
+    <button id="back" aria-label="back"><img class="mini" src="assets/firma.png" alt="Rachel"></button>
+    <div class="meta"><b>an archive of memories</b><br>17.04.2006 — 04.10.2026</div>
+  </header>
+  <!-- Messages: the text inside each p.msg is shown on the back -->
+  <div class="stage">
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/01.jpg" alt=""></div>
+      <div class="back"><p class="msg">today is the day it finally starts to sink in that you’re really no longer with us.</p></div></div></div>
+      <div class="cap">01</div></div>
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/02.jpg" alt=""></div>
+      <div class="back"><p class="msg">and as much as i wish it weren’t true, i know that no matter how much time passes, i’ll never get to see you again.</p></div></div></div>
+      <div class="cap">02</div></div>
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/03.jpg" alt=""></div>
+      <div class="back"><p class="msg">i don’t think i’ll ever be able to put into words how much that hurts me. there’s a part of me that still can’t believe you’re gone,</p></div></div></div>
+      <div class="cap">03</div></div>
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/04.jpg" alt=""></div>
+      <div class="back"><p class="msg">a part of me that wishes i could see you just one more time, hear your voice, and have one more moment with you.</p></div></div></div>
+      <div class="cap">04</div></div>
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/05.jpg" alt=""></div>
+      <div class="back"><p class="msg">i wish i had more time with you. i wish there were so many more memories left for us to make.</p></div></div></div>
+      <div class="cap">05</div></div>
+    <div class="it"><div class="card"><div class="inner">
+      <div class="front"><img src="assets/06.jpg" alt=""></div>
+      <div class="back"><p class="msg">it breaks my heart knowing that life will keep going on without you here, and that all i can do now is hold on to the memories we shared.</p></div></div></div>
+      <div class="cap">06</div></div>
+    <div class="it vid"><div class="card"><div class="inner">
+      <div class="front"><video src="assets/v1.mp4" autoplay muted loop playsinline preload="auto"></video></div>
+      <div class="back"><p class="msg">i hope that wherever you are, you’re at peace, and somehow you know just how loved you are.</p></div></div></div>
+      <div class="cap">07</div></div>
+    <div class="it vid"><div class="card"><div class="inner">
+      <div class="front"><video src="assets/v2.mp4" autoplay muted loop playsinline preload="auto"></video></div>
+      <div class="back"><p class="msg">i’ll carry you with me in everything i do, and i’ll love you and miss you every single day, for the rest of my life.</p></div></div></div>
+      <div class="cap">08</div></div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.msg').forEach(function(p){
+    if(!p.textContent.trim()){ p.textContent='—'; p.classList.add('empty'); }
+  });
+
+  // cursor
+  var dot=document.getElementById('dot'), x=innerWidth/2, y=innerHeight/2, cx=x, cy=y;
+  addEventListener('mousemove',function(e){x=e.clientX;y=e.clientY});
+  (function loop(){cx=x;cy=y;dot.style.transform='translate('+cx+'px,'+cy+'px)';requestAnimationFrame(loop)})();
+
+  // pages
+  var cover=document.getElementById('cover'), body=document.body;
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('seen'); io.unobserve(en.target);} });
+  },{threshold:.3});
+
+  function openArchive(instant){
+    if(instant){ cover.style.transition='none'; document.getElementById('archive').style.transition='none'; }
+    cover.classList.add('gone');
+    body.classList.remove('on-cover'); body.classList.add('on-archive');
+    scrollTo(0,0);
+    document.querySelectorAll('.it').forEach(function(el,i){
+      setTimeout(function(){el.classList.add('seen')}, (instant?0:2600) + i*700);
+    });
+    if(location.hash!=='#archive') history.replaceState(null,'','#archive');
+  }
+  function openCover(){
+    cover.style.transition=''; document.getElementById('archive').style.transition='';
+    body.classList.remove('on-archive'); body.classList.add('on-cover');
+    cover.classList.remove('gone');
+    document.querySelectorAll('.it').forEach(function(el){el.classList.remove('seen')});
+    history.replaceState(null,'','#');
+  }
+  document.getElementById('enter').addEventListener('click',function(){openArchive(false)});
+  document.getElementById('back').addEventListener('click',openCover);
+  if(location.hash==='#archive') openArchive(true);
+
+  document.querySelectorAll('video').forEach(function(v){ v.muted=true; var p=v.play(); if(p&&p.catch)p.catch(function(){}); });
+
+  // flip
+  var fine=matchMedia('(pointer:fine)').matches;
+  document.querySelectorAll('.card').forEach(function(c){
+    if(fine){
+      c.addEventListener('mouseenter',function(){c.classList.add('flip');dot.classList.add('big')});
+      c.addEventListener('mouseleave',function(){c.classList.remove('flip');dot.classList.remove('big')});
+    } else {
+      c.addEventListener('click',function(){c.classList.toggle('flip')});
+    }
+  });
+</script>
+</body>
+</html>
